@@ -28,7 +28,10 @@ const MenuItemsPage: React.FC = () => {
     loyalty_mode: 'none' as 'smart' | 'manual' | 'none',
     profit_allocation_percent: 20,
     fixed_points: 1,
-    is_active: true
+    is_active: true,
+    pricing_type: 'price_only' as 'price_only' | 'points_only' | 'hybrid',
+    price: 0,
+    points_discount_percent: 0
   });
   const [formLoading, setFormLoading] = useState(false);
   const [formError, setFormError] = useState('');
@@ -129,7 +132,10 @@ const MenuItemsPage: React.FC = () => {
         selling_price: formData.selling_price,
         loyalty_mode: formData.loyalty_mode,
         loyalty_settings: loyaltySettings,
-        is_active: formData.is_active
+        is_active: formData.is_active,
+        pricing_type: formData.pricing_type,
+        price: formData.price,
+        points_discount_percent: formData.points_discount_percent
       });
 
       await fetchMenuItems();
@@ -170,7 +176,10 @@ const MenuItemsPage: React.FC = () => {
         selling_price: formData.selling_price,
         loyalty_mode: formData.loyalty_mode,
         loyalty_settings: loyaltySettings,
-        is_active: formData.is_active
+        is_active: formData.is_active,
+        pricing_type: formData.pricing_type,
+        price: formData.price,
+        points_discount_percent: formData.points_discount_percent
       });
 
       await fetchMenuItems();
@@ -210,7 +219,10 @@ const MenuItemsPage: React.FC = () => {
       loyalty_mode: 'none',
       profit_allocation_percent: 20,
       fixed_points: 1,
-      is_active: true
+      is_active: true,
+      pricing_type: 'price_only',
+      price: 0,
+      points_discount_percent: 0
     });
     setFormError('');
   };
@@ -226,7 +238,10 @@ const MenuItemsPage: React.FC = () => {
       loyalty_mode: item.loyalty_mode,
       profit_allocation_percent: item.loyalty_settings.profit_allocation_percent || 20,
       fixed_points: item.loyalty_settings.fixed_points || 1,
-      is_active: item.is_active
+      is_active: item.is_active,
+      pricing_type: item.pricing_type || 'price_only',
+      price: item.price || 0,
+      points_discount_percent: item.points_discount_percent || 0
     });
     setFormError('');
   };
@@ -508,6 +523,17 @@ const MenuItemsPage: React.FC = () => {
                       <span className="font-semibold text-gray-900">{item.selling_price} AED</span>
                     </div>
 
+                    {item.pricing_type && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600">Payment Type</span>
+                        <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-800">
+                          {item.pricing_type === 'price_only' ? 'Cash Only' :
+                           item.pricing_type === 'points_only' ? 'Points Only' :
+                           `Hybrid (${item.points_discount_percent}% off)`}
+                        </span>
+                      </div>
+                    )}
+
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-600">Profit Margin</span>
                       <span className="font-semibold text-green-600">
@@ -651,8 +677,106 @@ const MenuItemsPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Loyalty Settings */}
+              {/* Pricing Configuration */}
               <div className="space-y-4">
+                <h4 className="font-medium text-gray-900 flex items-center gap-2">
+                  <DollarSign className="h-5 w-5 text-green-600" />
+                  Payment & Pricing Configuration
+                </h4>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Pricing Type
+                  </label>
+                  <div className="grid grid-cols-3 gap-2 mb-4">
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, pricing_type: 'price_only' })}
+                      className={`p-3 rounded-lg border-2 text-center transition-all ${
+                        formData.pricing_type === 'price_only'
+                          ? 'border-green-500 bg-green-50'
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <DollarSign className="h-5 w-5 mx-auto mb-1 text-green-600" />
+                      <p className="text-xs font-medium">Price Only</p>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, pricing_type: 'points_only' })}
+                      className={`p-3 rounded-lg border-2 text-center transition-all ${
+                        formData.pricing_type === 'points_only'
+                          ? 'border-blue-500 bg-blue-50'
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <Zap className="h-5 w-5 mx-auto mb-1 text-blue-600" />
+                      <p className="text-xs font-medium">Points Only</p>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, pricing_type: 'hybrid' })}
+                      className={`p-3 rounded-lg border-2 text-center transition-all ${
+                        formData.pricing_type === 'hybrid'
+                          ? 'border-purple-500 bg-purple-50'
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <Target className="h-5 w-5 mx-auto mb-1 text-purple-600" />
+                      <p className="text-xs font-medium">Hybrid</p>
+                    </button>
+                  </div>
+                </div>
+
+                {formData.pricing_type !== 'points_only' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Cash Price (AED) *
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.price}
+                      onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#E6A85C] focus:border-transparent"
+                      min="0"
+                      step="0.01"
+                      placeholder="Enter cash price"
+                    />
+                  </div>
+                )}
+
+                {formData.pricing_type === 'hybrid' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Points Discount (%)
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.points_discount_percent}
+                      onChange={(e) => setFormData({ ...formData, points_discount_percent: parseFloat(e.target.value) || 0 })}
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#E6A85C] focus:border-transparent"
+                      min="0"
+                      max="100"
+                      step="1"
+                      placeholder="e.g., 10 for 10% discount"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Customers paying with points get this discount
+                    </p>
+                    {formData.price > 0 && formData.points_discount_percent > 0 && (
+                      <div className="mt-2 p-2 bg-purple-50 rounded-lg text-sm">
+                        <p className="text-purple-900">
+                          Points price: <span className="font-bold">{(formData.price * (1 - formData.points_discount_percent / 100)).toFixed(2)} AED</span>
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <div className="border-t border-gray-200 my-4"></div>
+
                 <h4 className="font-medium text-gray-900 flex items-center gap-2">
                   <Zap className="h-5 w-5 text-blue-600" />
                   Loyalty Reward Settings
