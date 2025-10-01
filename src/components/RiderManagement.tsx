@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Bike, Plus, Edit3, Trash2, X, Save, Phone, User, CheckCircle, AlertCircle } from 'lucide-react';
+import { Bike, Plus, CreditCard as Edit3, Trash2, X, Save, Phone, User, CheckCircle, AlertCircle } from 'lucide-react';
 import { RiderService } from '../services/riderService';
 
 interface RiderManagementProps {
